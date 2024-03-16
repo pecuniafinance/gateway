@@ -2361,8 +2361,7 @@ export class Osmosis extends CosmosBase implements Cosmosish{
         returnObj.poolShares = clPosition.position.liquidity
         returnObj.unclaimedToken0 = unclaimedToken0.toString()
         returnObj.unclaimedToken1 = unclaimedToken1.toString()
-        const clPositionPool = extendedPools.find((pl) => pl.id.toString() === clPosition.position.poolId.toString());
-        returnObj.fee = clPositionPool?.fees7D.toString()
+        returnObj.fee = this.feeTier
       }
       // not returning GAMM positons here; problematic for strat and apparently this is amm-liquidity route only
       // else if (tokenId && returnPools.length > 0){ // we got a poolId but it was for a GAMM pool - so yes poolShares
@@ -2391,10 +2390,15 @@ export class Osmosis extends CosmosBase implements Cosmosish{
 
   
   async getCurrentBlockNumber(): Promise<number>{
-    const client = await CosmWasmClient
-    .connect(this.rpcUrl);
-    const getHeight = await client.getHeight()
-    return getHeight;
+    try{
+      const client = await CosmWasmClient
+      .connect(this.rpcUrl);
+      const getHeight = await client.getHeight()
+      return getHeight;
+    } catch (error) {
+      console.debug(error);
+      return 0 // cosmwasm likes to throw 429 on the above call, and we don't actually use this number anywhere on the strat side so this should be ok
+    }
   }
 
   /**

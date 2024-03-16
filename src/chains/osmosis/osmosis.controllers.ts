@@ -670,66 +670,76 @@ export class OsmosisController {
     }
 
     static async poll(osmosis: Osmosis, req: CosmosPollRequest) {
-      if (req.txHash){
-        const transaction = await osmosis.getTransaction(req.txHash);
-        const currentBlock = await osmosis.getCurrentBlockNumber();
-
-        //@ts-ignore cosmojs models again
-        var pool_id = undefined;
-        var position_id = undefined;
-        //@ts-ignore cosmojs models again
-        if (transaction.txResponse.logs){
-        //@ts-ignore cosmojs models again
-          transaction.txResponse.logs.forEach((log) => {
-        //@ts-ignore cosmojs models again
-            const create_position_event = log.events.find(({ type }) => type === 'create_position');
-            if (create_position_event){
-        //@ts-ignore cosmojs models again
-              const pool_id_attribute = create_position_event.attributes.find(({ key }) => key === 'pool_id');
-              if (pool_id_attribute){
-                pool_id = pool_id_attribute.value
+      try{
+        if (req.txHash){
+          const transaction = await osmosis.getTransaction(req.txHash);
+          const currentBlock = await osmosis.getCurrentBlockNumber();
+  
+          //@ts-ignore cosmojs models again
+          var pool_id = undefined;
+          var position_id = undefined;
+          //@ts-ignore cosmojs models again
+          if (transaction.txResponse.logs){
+          //@ts-ignore cosmojs models again
+            transaction.txResponse.logs.forEach((log) => {
+          //@ts-ignore cosmojs models again
+              const create_position_event = log.events.find(({ type }) => type === 'create_position');
+              if (create_position_event){
+          //@ts-ignore cosmojs models again
+                const pool_id_attribute = create_position_event.attributes.find(({ key }) => key === 'pool_id');
+                if (pool_id_attribute){
+                  pool_id = pool_id_attribute.value
+                }
+          //@ts-ignore cosmojs models again
+                const position_id_attribute = create_position_event.attributes.find(({ key }) => key === 'position_id');
+                if (position_id_attribute){
+                  position_id = position_id_attribute.value
+                }
               }
-        //@ts-ignore cosmojs models again
-              const position_id_attribute = create_position_event.attributes.find(({ key }) => key === 'position_id');
-              if (position_id_attribute){
-                position_id = position_id_attribute.value
-              }
-            }
-          })
-        }
-        var tokenId = position_id;
-        if (position_id == undefined){
-          tokenId = pool_id;
-        }
-
-        var txStatus = unconfirmedTransaction;
-        //@ts-ignore cosmojs models again
-        if (transaction.txResponse.code == successfulTransaction){
-          txStatus = 1; // clientside this is a successful tx
-        }
-        //@ts-ignore cosmojs models again
-        else if (transaction.txResponse.code != unconfirmedTransaction){
-        //@ts-ignore cosmojs models again
-          txStatus = transaction.txResponse.code; // any other failure
-        }
-        return {
-          txStatus: txStatus,
-          txReceipt: null,
-          tokenId: Number(tokenId),
-          txHash: req.txHash,
-          currentBlock,
-        //@ts-ignore cosmojs models again
-          txBlock: Number(transaction.txResponse.height.toString()),
-        //@ts-ignore cosmojs models again
-          gasUsed: Number(transaction.txResponse.gasUsed.toString()),
-        //@ts-ignore cosmojs models again
-          gasWanted: Number(transaction.txResponse.gasWanted.toString()),
-          txData: decodeTxRaw(transaction.tx),
-        };
-      
+            })
+          }
+          var tokenId = position_id;
+          if (position_id == undefined){
+            tokenId = pool_id;
+          }
+  
+          var txStatus = unconfirmedTransaction;
+          //@ts-ignore cosmojs models again
+          if (transaction.txResponse.code == successfulTransaction){
+            txStatus = 1; // clientside this is a successful tx
+          }
+          //@ts-ignore cosmojs models again
+          else if (transaction.txResponse.code != unconfirmedTransaction){
+          //@ts-ignore cosmojs models again
+            txStatus = transaction.txResponse.code; // any other failure
+          }
+          return {
+            txStatus: txStatus,
+            txReceipt: null,
+            tokenId: Number(tokenId),
+            txHash: req.txHash,
+            currentBlock,
+          //@ts-ignore cosmojs models again
+            txBlock: Number(transaction.txResponse.height.toString()),
+          //@ts-ignore cosmojs models again
+            gasUsed: Number(transaction.txResponse.gasUsed.toString()),
+          //@ts-ignore cosmojs models again
+            gasWanted: Number(transaction.txResponse.gasWanted.toString()),
+            txData: decodeTxRaw(transaction.tx),
+          };
+        
       }
+
+    } catch (err) {
+      logger.debug(err);
+      // throw new HttpException(
+      //   500,
+      //   LOAD_WALLET_ERROR_MESSAGE + err,
+      //   LOAD_WALLET_ERROR_CODE
+      // );
+    }
       return {
-        txHash: '',
+        txHash: req.txHash!,
         txStatus: 0,
         txBlock: 0,
         gasUsed: 0,
