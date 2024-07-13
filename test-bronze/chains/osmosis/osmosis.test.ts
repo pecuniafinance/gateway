@@ -158,7 +158,7 @@ describe('controllers - price + trade', () => {
   });
 
   it('trade', async () => {
-    const tradeRequest = {'quote':'ION', 'base':'OSMO', 'amount':'0.01', 'side':'BUY' as Side, 'allowedSlippage':'100/100', 'chain':'osmosis', 'network':network, 'address':osmosisAddress, };
+    const tradeRequest = {'quote':'ION', 'base':'OSMO', 'amount':'0.04', 'side':'BUY' as Side, 'allowedSlippage':'100/100', 'chain':'osmosis', 'network':network, 'address':osmosisAddress, };
     const tradeResponse = await osmosis.controller.trade(osmosis, tradeRequest)
     expect(tradeResponse.base).toEqual('uosmo')
   });
@@ -188,7 +188,7 @@ describe('controllers - CL Pools + Liquidity', () => {
 
   var poolIdCL: number;
   it('addLiquidity CL', async () => {
-    const addLiquidityRequestFunction = {'allowedSlippage':'100/100', 'lowerPrice':'100', 'upperPrice':'500', 'fee': 'high', 'token0':'ION', 'token1':'OSMO', 'amount0':'0.000401', 'amount1':'0.1', 'chain':'osmosis', 'network':network, 'address':osmosisAddress};
+    const addLiquidityRequestFunction = {'allowedSlippage':'100/100', 'lowerPrice':'100', 'upperPrice':'500', 'fee': 'high', 'token0':'ION', 'token1':'OSMO', 'amount0':'0.000401', 'amount1':'0.01', 'chain':'osmosis', 'network':network, 'address':osmosisAddress};
     var addLiquidityResponse = await osmosis.controller.addLiquidity(osmosis, addLiquidityRequestFunction)
     poolIdCL = addLiquidityResponse.tokenId;
     expect(addLiquidityResponse.tokenId).toBeDefined();
